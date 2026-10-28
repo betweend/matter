@@ -1,8 +1,9 @@
 # Локальный Matter Server add-on
 
-См. [DOCS.md](DOCS.md) для установки на HAOS, настройки opt-in обхода device
-attestation, рисков и инструкции отката.
+Полный исходный код Matter Server включён в каталог `matterjs-server/` и уже
+содержит opt-in исправление обработки attestation findings. Dockerfile собирает
+его локально; при сборке не требуется скачивать или клонировать исходники сервера.
 
-Исходник Matter Server зафиксирован на commit
-`83b79084c2c65ded92d9f5d61ab8d5417bf49699`; Docker build применяет патч из
-`patches/allow-attestation-failure.patch`.
+Добавьте `https://github.com/betweend/matter` в **Settings → Add-ons → Add-on
+store → ⋮ → Repositories**. Руководство по настройке и предупреждения
+безопасности: [DOCS.md](DOCS.md).

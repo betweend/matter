@@ -1,8 +1,8 @@
 # Matter Server (attestation opt-in)
 
-Локальный Home Assistant add-on на базе Matter Server `1.4.0` (исходный
-commit `83b79084c2c65ded92d9f5d61ab8d5417bf49699`). Dockerfile собирает сервер
-из этого зафиксированного исходника и применяет лежащий рядом патч.
+Локальный Home Assistant add-on. Полный исходный код Matter Server `1.4.0`
+включён в `matterjs-server/`; исправление attestation уже находится в исходниках.
+Сборка не клонирует сервер и не загружает его исходный код из сети.
 
 ## Внимание: ослабление проверки подлинности
 
@@ -21,11 +21,9 @@ commit `83b79084c2c65ded92d9f5d61ab8d5417bf49699`). Dockerfile собирает 
 ## Установка на Home Assistant OS
 
 1. Сделайте резервную копию Home Assistant и Matter Server.
-2. Скопируйте **всю** папку `matter_server_noattest` в `/addons/matter_server_noattest/`
-   через Samba или SSH add-on. Dockerfile должен остаться в этой папке, а каталог
-   `patches/` — рядом с ним.
-3. В Home Assistant откройте **Settings → Add-ons → Add-on store → ⋮ → Check for
-   updates → Local add-ons**, затем установите **Matter Server (attestation opt-in)**.
+2. Добавьте `https://github.com/betweend/matter` в **Settings → Add-ons → Add-on
+   store → ⋮ → Repositories** и установите **Matter Server (attestation opt-in)**
+   из появившегося репозитория.
 4. Остановите официальный **Matter Server** add-on перед запуском локального:
    оба используют host network и порт TCP 5580, поэтому одновременно работать
    они не могут.
@@ -73,9 +71,10 @@ add-on резервную копию **всего** каталога данны�
   `NTPSynchronized=yes` на хосте. Если статус не удаётся получить, журнал
   содержит предупреждение, а синхронизация остаётся выключенной.
 
-## Обновление pinned исходника
+## Сборка
 
-После публикации изменений в собственном fork можно заменить URL репозитория и
-`MATTERJS_SERVER_COMMIT` в Dockerfile на полный commit SHA вашего fork. Сейчас
-сборка намеренно использует upstream `v1.4.0` commit SHA и применяет локальный
-патч, чтобы не ссылаться на несуществующий fork или неподтверждённый commit.
+Весь исходный код, необходимый для сборки Matter Server, хранится в каталоге
+`matterjs-server/` в этом репозитории. Образ устанавливает npm-зависимости из
+включённого lock-файла и выполняет сборку из локальных файлов. Для получения
+самого исходного кода Matter Server доступ к GitHub во время Docker build не
+требуется.

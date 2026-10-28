@@ -2,14 +2,10 @@ FROM node:24-trixie-slim
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ARG MATTERJS_SERVER_COMMIT=83b79084c2c65ded92d9f5d61ab8d5417bf49699
-ARG MATTERJS_SERVER_REPOSITORY=https://github.com/matter-js/matterjs-server.git
-
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
-        git \
         iputils-ping \
         curl \
         python3 \
@@ -24,17 +20,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && setcap cap_net_raw+ep "$(command -v ping)" \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone "${MATTERJS_SERVER_REPOSITORY}" . \
-    && git checkout --detach "${MATTERJS_SERVER_COMMIT}" \
-    && test "$(git rev-parse HEAD)" = "${MATTERJS_SERVER_COMMIT}"
+COPY matterjs-server/ ./
 
-COPY patches/allow-attestation-failure.patch /tmp/allow-attestation-failure.patch
-RUN git apply /tmp/allow-attestation-failure.patch \
-    && rm /tmp/allow-attestation-failure.patch \
-    && npm install --foreground-scripts \
+RUN npm ci --foreground-scripts \
     && npm cache clean --force \
     && apt-get purge -y --auto-remove \
-        git \
         python3 \
         make \
         gcc \

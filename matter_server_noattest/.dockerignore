@@ -1,0 +1,7 @@
+matterjs-server/.git
+matterjs-server/node_modules
+matterjs-server/**/node_modules
+matterjs-server/build
+matterjs-server/**/build
+matterjs-server/dist
+matterjs-server/**/dist
