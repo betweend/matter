@@ -1,5 +1,5 @@
 ---
-version: 9.2.0-noattest.1
+version: 9.2.0-noattest.2
 slug: matter_server_noattest
 name: Matter Server (attestation opt-in)
 description: Local matter.js Matter Server with an opt-in attestation-failure bypass.

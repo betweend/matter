@@ -8,6 +8,7 @@ ARG MATTERJS_SERVER_REPOSITORY=https://github.com/matter-js/matterjs-server.git
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
         git \
         iputils-ping \
         curl \
