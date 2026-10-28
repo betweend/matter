@@ -42,7 +42,7 @@ RUN chmod 0755 /usr/local/bin/run.mjs
 ENV LOG_LEVEL=info
 ENV STORAGE_PATH=/data
 
-EXPOSE 5580
+EXPOSE 5581
 VOLUME ["/data"]
 
 USER 1000:1000

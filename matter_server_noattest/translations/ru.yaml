@@ -1,0 +1,48 @@
+---
+configuration:
+  log_level:
+    name: Уровень журнала Matter Server
+    description: Уровень логирования этого add-on (не официального Matter Server).
+  enable_test_net_dcl:
+    name: Разрешить test-net DCL
+    description: >-
+      Доверять PAA, OTA и сведениям об устройствах из test-net DCL. Нужно для
+      разработки и тестов. Не обходит ошибки device attestation.
+  allow_attestation_failure:
+    name: Разрешить ошибку device attestation
+    description: >-
+      Продолжать комиссионирование, если Matter Device Attestation вернул
+      findings (несовпадение VID, недоверенная цепочка сертификатов, тестовый
+      сертификат и т.д.). По умолчанию выключено. Включайте только для своих
+      устройств в доверенной сети. Настройка действует, только если интеграция
+      Matter в Home Assistant подключена к ЭТОМУ add-on (WebSocket TCP 5581),
+      а не к официальному Matter Server.
+  time_sync:
+    name: Синхронизация времени
+    description: >-
+      Отправлять ли текущее время на Matter-устройства. "auto" (по умолчанию)
+      включает это только при NTP на хосте; "on" включает всегда; "off"
+      выключает.
+  default_fabric_label:
+    name: Метка fabric
+    description: >-
+      Зафиксировать метку fabric (до 32 символов). По умолчанию используется
+      имя дома Home Assistant.
+  bluetooth_adapter_id:
+    name: ID Bluetooth-адаптера (устарело)
+    description: >-
+      ID контроллера BlueZ. Лучше использовать «Включить BLE proxy».
+  ble_proxy:
+    name: Включить BLE proxy
+    description: >-
+      Открыть endpoint BLE proxy, чтобы Home Assistant мог вести BLE-комиссионирование.
+  matter_server_env_vars:
+    name: Переменные окружения Matter Server
+    description: >-
+      Дополнительные переменные окружения в формате KEY=VALUE, по одной в строке.
+  matter_server_args:
+    name: Дополнительные аргументы Matter Server
+    description: >-
+      Дополнительные аргументы командной строки. Список можно получить через "--help".
+network:
+  5581/tcp: WebSocket этого Matter Server. Укажите его в интеграции Matter.

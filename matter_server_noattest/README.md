@@ -1,9 +1,10 @@
 # Локальный Matter Server add-on
 
-Полный исходный код Matter Server включён в каталог `matterjs-server/` и уже
-содержит opt-in исправление обработки attestation findings. Dockerfile собирает
-его локально; при сборке не требуется скачивать или клонировать исходники сервера.
+Это отдельное приложение Home Assistant, не официальный Matter Server. Полный
+исходный код включён в каталог `matterjs-server/` и уже содержит opt-in
+исправление обработки attestation findings. Dockerfile собирает его локально.
 
 Добавьте `https://github.com/betweend/matter` в **Settings → Add-ons → Add-on
-store → ⋮ → Repositories**. Руководство по настройке и предупреждения
-безопасности: [DOCS.md](DOCS.md).
+store → ⋮ → Repositories**, установите **Matter Server (attestation opt-in)** и
+переключите интеграцию Matter на `ws://<IP-Home-Assistant>:5581/ws`. Руководство
+и предупреждения безопасности: [DOCS.md](DOCS.md).

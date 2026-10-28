@@ -1,2 +1,4 @@
 ---
-name: Matter Server add-on
+name: Matter Server (attestation opt-in)
+url: https://github.com/betweend/matter
+maintainer: betweend

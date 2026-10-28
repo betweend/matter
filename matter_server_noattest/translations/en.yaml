@@ -1,0 +1,52 @@
+---
+configuration:
+  log_level:
+    name: Matter Server log level
+    description: Logging level of this add-on (not the official Matter Server).
+  enable_test_net_dcl:
+    name: Enable test-net DCL usage
+    description: >-
+      Enable PAA root certificates, software updates and other device
+      information from test-net DCL. This is meant for development and testing
+      purposes. It does not bypass device attestation failures.
+  allow_attestation_failure:
+    name: Allow device attestation failure
+    description: >-
+      Continue commissioning when Matter Device Attestation reports findings
+      (mismatched VID, untrusted certificate chain, test certificate, and so
+      on). Off by default. Enable only for your own devices on a trusted
+      network. These settings apply only if the Home Assistant Matter
+      integration is pointed at THIS add-on (WebSocket TCP 5581), not at the
+      official Matter Server.
+  time_sync:
+    name: Time synchronization
+    description: >-
+      Control whether the Matter Server pushes the current time to Matter
+      devices. "auto" (default) enables it only when the host clock is NTP
+      synchronized; "on" always enables it; "off" disables it.
+  default_fabric_label:
+    name: Default fabric label
+    description: >-
+      Pin the fabric label (shown on Matter devices for this controller, max
+      32 characters) to this value. By default the Home Assistant home name is
+      used.
+  bluetooth_adapter_id:
+    name: Bluetooth adapter ID (deprecated)
+    description: >-
+      BlueZ Bluetooth adapter controller ID. Prefer "Enable BLE proxy" instead.
+  ble_proxy:
+    name: Enable BLE proxy
+    description: >-
+      Expose the BLE proxy endpoint so Home Assistant can drive BLE commissioning.
+  matter_server_env_vars:
+    name: Matter Server environment variables
+    description: >-
+      Additional environment variables to export before starting Matter Server.
+      Provide one entry per list item in "KEY=VALUE" format.
+  matter_server_args:
+    name: Extra Matter Server arguments
+    description: >-
+      Additional command line arguments for Matter Server. Use "--help" to list
+      possible arguments.
+network:
+  5581/tcp: Matter Server WebSocket (this add-on). Point the Matter integration here.

@@ -1,23 +1,26 @@
 ---
-version: 9.2.0-noattest.3
+version: 9.2.0-noattest.4
 slug: matter_server_noattest
 name: Matter Server (attestation opt-in)
-description: Local matter.js Matter Server with an opt-in attestation-failure bypass.
+description: >-
+  Separate Matter Server (not the official Home Assistant app). Open THIS
+  app to configure attestation bypass and related options, then point the
+  Matter integration at its WebSocket on TCP 5581.
 url: https://github.com/betweend/matter
 arch:
   - aarch64
   - amd64
-discovery:
-  - matter
 hassio_api: true
 homeassistant: 2024.6.0
 host_ipc: false
 host_network: true
 host_dbus: true
 ingress: true
-ingress_port: 5580
-panel_icon: mdi:matter
+ingress_port: 5581
+panel_icon: mdi:shield-alert
+panel_title: Matter (attestation)
 init: false
+watchdog: true
 map:
   - type: app_config
     read_only: false
@@ -41,6 +44,6 @@ schema:
   matter_server_env_vars:
     - match(^[A-Za-z_][A-Za-z0-9_]*=.*$)?
 ports:
-  5580/tcp: null
+  5581/tcp: 5581
 stage: experimental
 startup: services
