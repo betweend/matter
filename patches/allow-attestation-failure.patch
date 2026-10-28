@@ -1,0 +1,150 @@
+diff --git a/packages/matter-server/src/MatterServer.ts b/packages/matter-server/src/MatterServer.ts
+index fa723ae..8728677 100644
+--- a/packages/matter-server/src/MatterServer.ts
++++ b/packages/matter-server/src/MatterServer.ts
+@@ -185,6 +185,7 @@ async function start() {
+         config,
+         {
+             enableTestNetDcl: cliOptions.enableTestNetDcl,
++            allowAttestationFailure: cliOptions.allowAttestationFailure,
+             disableOtaProvider: cliOptions.disableOta,
+             disableDclSeed: cliOptions.disableDclSeed,
+             serverId: legacyData.serverId,
+diff --git a/packages/matter-server/src/cli.ts b/packages/matter-server/src/cli.ts
+index 0a45f3d..1a851d7 100644
+--- a/packages/matter-server/src/cli.ts
++++ b/packages/matter-server/src/cli.ts
+@@ -60,6 +60,7 @@ export interface CliOptions {
+ 
+     // Certificate configuration
+     enableTestNetDcl: boolean;
++    allowAttestationFailure: boolean;
+     disableDclSeed: boolean;
+ 
+     // Bluetooth configuration
+@@ -184,6 +185,12 @@ export function parseCliArgs(argv?: string[]): CliOptions {
+                 .default(false)
+                 .env("ENABLE_TEST_NET_DCL"),
+         )
++        .addOption(
++            new Option(
++                "--allow-attestation-failure",
++                "Continue commissioning when device attestation reports findings",
++            ).default(false),
++        )
+         .addOption(
+             new Option(
+                 "--disable-dcl-seed [value]",
+@@ -328,6 +335,7 @@ export function parseCliArgs(argv?: string[]): CliOptions {
+         primaryInterface: opts.primaryInterface ?? null,
+         defaultFabricLabel: opts.defaultFabricLabel ?? null,
+         enableTestNetDcl: opts.enableTestNetDcl,
++        allowAttestationFailure: opts.allowAttestationFailure,
+         disableDclSeed: opts.disableDclSeed,
+         bluetoothAdapter: opts.bluetoothAdapter ?? null,
+         bleProxy: opts.bleProxy,
+diff --git a/packages/ws-controller/src/controller/ControllerCommandHandler.ts b/packages/ws-controller/src/controller/ControllerCommandHandler.ts
+index 20f3c11..a0d44f3 100644
+--- a/packages/ws-controller/src/controller/ControllerCommandHandler.ts
++++ b/packages/ws-controller/src/controller/ControllerCommandHandler.ts
+@@ -160,6 +160,7 @@ export class ControllerCommandHandler {
+     readonly #bleEnabled: boolean;
+     readonly #bleProxyEnabled: boolean;
+     readonly #otaEnabled: boolean;
++    readonly #allowAttestationFailure: boolean;
+     /** Node management and attribute cache */
+     #nodes = new Nodes();
+     /** Cache of available updates keyed by nodeId */
+@@ -207,6 +208,7 @@ export class ControllerCommandHandler {
+         otaEnabled: boolean,
+         timeSyncEnabled = false,
+         threadDiagnosticsEnabled = false,
++        allowAttestationFailure = false,
+     ) {
+         this.#controller = controllerInstance;
+ 
+@@ -214,6 +216,7 @@ export class ControllerCommandHandler {
+         this.#bleProxyEnabled = bleProxyEnabled;
+         logger.info(`BLE is ${bleEnabled ? "enabled" : "disabled"}${bleProxyEnabled ? " (proxy mode)" : ""}`);
+         this.#otaEnabled = otaEnabled;
++        this.#allowAttestationFailure = allowAttestationFailure;
+ 
+         const attributeReader: NodeAttributeReader = {
+             nodeConnected: peer => !!(this.#nodes.has(peer.nodeId) && this.#nodes.get(peer.nodeId).isConnected),
+@@ -1195,6 +1198,15 @@ export class ControllerCommandHandler {
+                 wifiNetwork,
+                 threadNetwork,
+                 onAttestationFailure: findings => {
++                    if (this.#allowAttestationFailure) {
++                        const details = findings
++                            .map(f => `${f.level}/${String(f.type)}: ${f.message}`)
++                            .join("; ");
++                        logger.warn(
++                            `WARNING: Bypassing Matter device attestation findings because --allow-attestation-failure is enabled: ${details}`,
++                        );
++                        return true;
++                    }
+                     let testCertReason: string | undefined;
+                     let hardError = false;
+                     for (const f of findings) {
+diff --git a/packages/ws-controller/src/controller/MatterController.ts b/packages/ws-controller/src/controller/MatterController.ts
+index c58e80b..ec61ab0 100644
+--- a/packages/ws-controller/src/controller/MatterController.ts
++++ b/packages/ws-controller/src/controller/MatterController.ts
+@@ -84,6 +84,7 @@ export async function computeCompressedNodeId(
+ 
+ export interface MatterControllerOptions {
+     enableTestNetDcl?: boolean;
++    allowAttestationFailure?: boolean;
+     disableOtaProvider?: boolean;
+     /** Disable bundled offline DCL seed data (PAA roots, CD signers, vendors). When true, only network DCL is used. */
+     disableDclSeed?: boolean;
+@@ -205,6 +206,7 @@ export class MatterController {
+     #serverVersion: string;
+     #legacyCommissionedDates?: Map<string, Timestamp>;
+     #enableTestNetDcl = false;
++    #allowAttestationFailure = false;
+     #disableOtaProvider = true;
+     #disableDclSeed = false;
+     #bleProxyEnabled = false;
+@@ -297,6 +299,7 @@ export class MatterController {
+         this.#serverId = serverId;
+         this.#serverVersion = options.serverVersion ?? "0.0.0";
+         this.#enableTestNetDcl = options.enableTestNetDcl ?? this.#enableTestNetDcl;
++        this.#allowAttestationFailure = options.allowAttestationFailure ?? this.#allowAttestationFailure;
+         this.#disableOtaProvider = options.disableOtaProvider ?? this.#disableOtaProvider;
+         this.#disableDclSeed = options.disableDclSeed ?? this.#disableDclSeed;
+         this.#bleProxyEnabled = options.bleProxyEnabled ?? this.#bleProxyEnabled;
+@@ -415,6 +418,7 @@ export class MatterController {
+                 !this.#disableOtaProvider,
+                 this.#enableTimeSync,
+                 !this.#threadDiagnosticsDisabled,
++                this.#allowAttestationFailure,
+             );
+ 
+             this.#commandHandler.events.started.once(async () => {
+
+diff --git a/packages/matter-server/test/CliTest.ts b/packages/matter-server/test/CliTest.ts
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/packages/matter-server/test/CliTest.ts
+@@ -0,0 +1,18 @@
++/**
++ * @license
++ * Copyright 2025-2026 Open Home Foundation
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++describe("CLI", () => {
++    it("keeps attestation failure bypass disabled by default", async () => {
++        const { parseCliArgs } = await import(new URL("../../../dist/esm/cli.js", import.meta.url).href);
++        expect(parseCliArgs(["node", "matter-server"]).allowAttestationFailure).to.be.false;
++    });
++
++    it("enables attestation failure bypass only when requested", async () => {
++        const { parseCliArgs } = await import(new URL("../../../dist/esm/cli.js", import.meta.url).href);
++        expect(parseCliArgs(["node", "matter-server", "--allow-attestation-failure"]).allowAttestationFailure).to.be
++            .true;
++    });
++});
